@@ -1,0 +1,15 @@
+# .NET build output
+bin/
+obj/
+*.user
+
+# Rider / IDE
+.idea/
+.vs/
+
+# Referanseløsninger fra GetAcademy — skal aldri pushes
+Løsningsforslag/
+
+# Private studienotater — holdes lokalt, ikke i repoet
+NOTES.md
+GJENNOMGANG.md

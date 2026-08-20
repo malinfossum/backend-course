@@ -1,0 +1,17 @@
+[
+  {
+    "Id": 1,
+    "Title": "The Hobbit",
+    "BorrowedBy": null
+  },
+  {
+    "Id": 2,
+    "Title": "Clean Code",
+    "BorrowedBy": null
+  },
+  {
+    "Id": 3,
+    "Title": "The Pragmatic Programmer",
+    "BorrowedBy": "Ada"
+  }
+]

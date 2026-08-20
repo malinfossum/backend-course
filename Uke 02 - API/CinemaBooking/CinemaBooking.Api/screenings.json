@@ -1,0 +1,14 @@
+[
+  {
+    "Id": 1,
+    "MovieTitle": "Interstellar",
+    "NumberOfSeats": 10,
+    "ReservedSeats": [2, 5, 8]
+  },
+  {
+    "Id": 2,
+    "MovieTitle": "The Matrix",
+    "NumberOfSeats": 8,
+    "ReservedSeats": [1, 4]
+  }
+]

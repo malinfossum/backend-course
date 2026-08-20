@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nettauksjon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main>
+        <h1>Nettauksjon</h1>
+
+        <section class="user">
+            <label for="bidderName">Ditt navn</label>
+            <input
+                id="bidderName"
+                type="text"
+                placeholder="Skriv navnet ditt">
+        </section>
+
+        <section>
+            <h2>Auksjoner</h2>
+
+            <div id="message"></div>
+
+            <div id="auctions"></div>
+        </section>
+
+        <section class="create-auction">
+            <h2>Opprett ny auksjon</h2>
+
+            <form id="createAuctionForm">
+                <input
+                    id="itemName"
+                    type="text"
+                    placeholder="Hva skal selges?"
+                    required>
+
+                <input
+                    id="startingPrice"
+                    type="number"
+                    min="0"
+                    placeholder="Startpris"
+                    required>
+
+                <button type="submit">
+                    Opprett auksjon
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

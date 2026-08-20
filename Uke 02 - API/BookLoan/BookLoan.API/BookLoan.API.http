@@ -1,0 +1,71 @@
+@baseUrl = http://localhost:5195
+
+### Lån bok 1 til Grace — 200 OK
+
+POST {{baseUrl}}/loans
+Content-Type: application/json
+
+{
+  "bookId": 1,
+  "userName": "Grace"
+}
+
+### Lån bok 1 en gang til — 400, boka er allerede utlånt
+
+POST {{baseUrl}}/loans
+Content-Type: application/json
+
+{
+  "bookId": 1,
+  "userName": "Linus"
+}
+
+### Lån en bok som ikke finnes — 400, boka finnes ikke
+
+POST {{baseUrl}}/loans
+Content-Type: application/json
+
+{
+  "bookId": 99,
+  "userName": "Grace"
+}
+
+### Lån uten navn — 400, låntaker må ha et navn
+
+POST {{baseUrl}}/loans
+Content-Type: application/json
+
+{
+  "bookId": 2,
+  "userName": ""
+}
+
+### Lever tilbake bok 1 — 200 OK
+
+POST {{baseUrl}}/returns
+Content-Type: application/json
+
+{
+  "bookId": 1,
+  "userName": "Grace"
+}
+
+### Lever tilbake bok 1 en gang til — 400, boka er ikke utlånt
+
+POST {{baseUrl}}/returns
+Content-Type: application/json
+
+{
+  "bookId": 1,
+  "userName": "Grace"
+}
+
+### Lever tilbake en bok som er lånt ut til noen andre — 400
+
+POST {{baseUrl}}/returns
+Content-Type: application/json
+
+{
+  "bookId": 3,
+  "userName": "Grace"
+}

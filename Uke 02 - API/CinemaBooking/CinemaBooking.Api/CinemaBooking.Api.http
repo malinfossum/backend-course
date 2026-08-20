@@ -1,0 +1,55 @@
+@baseUrl = http://localhost:5206
+
+### Hent alle kinovisninger
+GET {{baseUrl}}/screenings
+
+### Hent én kinovisning
+GET {{baseUrl}}/screenings/1
+
+### Kinovisning som ikke finnes -> 404
+GET {{baseUrl}}/screenings/999
+
+### Gyldig reservasjon -> 200 og en kvittering
+POST {{baseUrl}}/screenings/1/reservations
+Content-Type: application/json
+
+{
+  "customerName": "Ada",
+  "seatNumber": 6
+}
+
+### Samme sete en gang til -> 400
+POST {{baseUrl}}/screenings/1/reservations
+Content-Type: application/json
+
+{
+  "customerName": "Linus",
+  "seatNumber": 6
+}
+
+### Ugyldig setenummer -> 400
+POST {{baseUrl}}/screenings/1/reservations
+Content-Type: application/json
+
+{
+  "customerName": "Ada",
+  "seatNumber": 99
+}
+
+### Manglende navn -> 400
+POST {{baseUrl}}/screenings/1/reservations
+Content-Type: application/json
+
+{
+  "customerName": "",
+  "seatNumber": 7
+}
+
+### Kinovisning som ikke finnes -> 400
+POST {{baseUrl}}/screenings/999/reservations
+Content-Type: application/json
+
+{
+  "customerName": "Ada",
+  "seatNumber": 1
+}

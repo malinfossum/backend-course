@@ -1,0 +1,63 @@
+@host = http://localhost:5237
+
+### Alle auksjoner
+GET {{host}}/auctions
+
+### Én auksjon
+GET {{host}}/auctions/2
+
+### Auksjon som ikke finnes -> 404
+GET {{host}}/auctions/999
+
+### Opprett auksjon -> 201
+POST {{host}}/auctions
+Content-Type: application/json
+
+{
+  "itemName": "Nintendo Switch",
+  "startingPrice": 1000
+}
+
+### For lavt bud -> 400
+POST {{host}}/auctions/2/bids
+Content-Type: application/json
+
+{
+  "bidderName": "Ada",
+  "amount": 900
+}
+
+### Gyldig bud -> 200
+POST {{host}}/auctions/2/bids
+Content-Type: application/json
+
+{
+  "bidderName": "Ada",
+  "amount": 1200
+}
+
+### Avslutt auksjon -> 200
+PATCH {{host}}/auctions/2
+Content-Type: application/json
+
+{
+  "isClosed": true
+}
+
+### Bud på avsluttet auksjon -> 400
+POST {{host}}/auctions/2/bids
+Content-Type: application/json
+
+{
+  "bidderName": "Linus",
+  "amount": 5000
+}
+
+### Bare aktive auksjoner
+GET {{host}}/auctions?active=true
+
+### Slett auksjon -> 204
+DELETE {{host}}/auctions/5
+
+### Slett samme igjen -> 404
+DELETE {{host}}/auctions/5

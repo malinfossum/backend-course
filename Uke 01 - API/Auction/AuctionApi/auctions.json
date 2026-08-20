@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "itemName": "Vintage Nintendo Game Boy",
+    "currentBid": 500,
+    "highestBidder": null,
+    "isClosed": false,
+    "bids": []
+  },
+  {
+    "id": 2,
+    "itemName": "LEGO Millennium Falcon",
+    "currentBid": 1600,
+    "highestBidder": "Ada",
+    "isClosed": false,
+    "bids": [
+      {
+        "bidderName": "Alan",
+        "amount": 1300,
+        "placedAt": "2026-08-14T08:50:41.6615355+00:00"
+      },
+      {
+        "bidderName": "Grace",
+        "amount": 1500,
+        "placedAt": "2026-08-14T08:50:52.7614609+00:00"
+      },
+      {
+        "bidderName": "Ada",
+        "amount": 1600,
+        "placedAt": "2026-08-14T08:52:54.4433168+00:00"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "itemName": "Gammel Commodore 64",
+    "currentBid": 750,
+    "highestBidder": null,
+    "isClosed": false,
+    "bids": []
+  },
+  {
+    "id": 4,
+    "itemName": "Støvsuger",
+    "currentBid": 500,
+    "highestBidder": null,
+    "isClosed": true,
+    "bids": []
+  },
+  {
+    "id": 5,
+    "itemName": "Vaskemaskin",
+    "currentBid": 1500,
+    "highestBidder": null,
+    "isClosed": false,
+    "bids": []
+  }
+]

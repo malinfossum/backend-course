@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Step 1/">
+    <Project Path="BookLoan.Basic.Console/BookLoan.Basic.Console.csproj" />
+  </Folder>
+  <Folder Name="/Step 2/">
+    <Project Path="BookLoan.DI.Console/BookLoan.DI.Console.csproj" />
+  </Folder>
+  <Folder Name="/Step 3/">
+    <Project Path="BookLoan.API/BookLoan.API.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="BookLoan.Tests/BookLoan.Tests.csproj" />
+  </Folder>
+</Solution>
