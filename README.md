@@ -1,4 +1,4 @@
-# backend-kurs
+# Backend-course
 
 My own solutions to the tasks from the backend course in GET Prepared. One folder per week, mirroring
 the structure of the course material.
