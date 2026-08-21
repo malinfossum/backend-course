@@ -7,8 +7,8 @@ public class ScreeningService
 {
     private readonly IScreeningRepository _screeningRepository;
 
-    // Servicen oppretter ikke FileScreeningRepository selv. Den får et
-    // IScreeningRepository inn, og vet ikke hvilken som kommer.
+    // The service does not create FileScreeningRepository itself. It is handed
+    // an IScreeningRepository, and it does not know which one it got.
     public ScreeningService(IScreeningRepository screeningRepository)
     {
         _screeningRepository = screeningRepository;
@@ -25,8 +25,8 @@ public class ScreeningService
 
         if (screening == null)
         {
-            return Result<Screening>.Failure(
-                $"Fant ikke kinovisning {screeningId}.");
+            return Result<Screening>.NotFound(
+                $"No screening with id {screeningId}.");
         }
 
         return Result<Screening>.Success(screening);
@@ -39,34 +39,45 @@ public class ScreeningService
     {
         if (string.IsNullOrWhiteSpace(customerName))
         {
-            return Result<ReservationReceipt>.Failure(
-                "Kunden må ha et navn.");
+            return Result<ReservationReceipt>.Validation(
+                "The customer must have a name.");
         }
 
+        // Name validation runs before the lookup on purpose: it is pure
+        // validation with no I/O, so there is no reason to read storage to
+        // reject a request we already know is invalid.
         var screening = _screeningRepository.Find(screeningId);
 
         if (screening == null)
         {
-            return Result<ReservationReceipt>.Failure(
-                $"Fant ikke kinovisning {screeningId}.");
+            return Result<ReservationReceipt>.NotFound(
+                $"No screening with id {screeningId}.");
         }
 
-        if (seatNumber < 1 || seatNumber > screening.NumberOfSeats)
+        if (!screening.HasSeat(seatNumber))
         {
-            return Result<ReservationReceipt>.Failure(
-                $"Sete {seatNumber} finnes ikke. "
-                + $"Visningen har setene 1-{screening.NumberOfSeats}.");
+            return Result<ReservationReceipt>.Validation(
+                $"Seat {seatNumber} does not exist. "
+                + $"This screening has seats 1-{screening.NumberOfSeats}.");
         }
 
-        if (screening.ReservedSeats.Contains(seatNumber))
+        if (screening.ReservationFor(seatNumber) != null)
         {
-            return Result<ReservationReceipt>.Failure(
-                $"Sete {seatNumber} er allerede reservert.");
+            return Result<ReservationReceipt>.Conflict(
+                $"Seat {seatNumber} is already reserved.");
         }
 
-        // Først her endrer vi noe. Alle feilene over returnerer før dette,
-        // slik at en mislykket reservasjon ikke rører tilstanden.
-        screening.ReservedSeats.Add(seatNumber);
+        if (screening.SeatsHeldBy(customerName) >= Screening.MaxSeatsPerCustomer)
+        {
+            return Result<ReservationReceipt>.Conflict(
+                $"{customerName.Trim()} already holds "
+                + $"{Screening.MaxSeatsPerCustomer} seats on this screening, "
+                + "which is the maximum.");
+        }
+
+        // Only here does anything change. Every rule above returns before this
+        // line, so a failed reservation cannot touch the state.
+        screening.Reserve(seatNumber, customerName.Trim());
 
         _screeningRepository.Save(screening);
 
@@ -79,5 +90,55 @@ public class ScreeningService
         };
 
         return Result<ReservationReceipt>.Success(receipt);
+    }
+
+    public Result<Reservation> CancelReservation(
+        int screeningId,
+        int seatNumber,
+        string customerName)
+    {
+        if (string.IsNullOrWhiteSpace(customerName))
+        {
+            return Result<Reservation>.Validation(
+                "The customer must have a name.");
+        }
+
+        var screening = _screeningRepository.Find(screeningId);
+
+        if (screening == null)
+        {
+            return Result<Reservation>.NotFound(
+                $"No screening with id {screeningId}.");
+        }
+
+        if (!screening.HasSeat(seatNumber))
+        {
+            return Result<Reservation>.Validation(
+                $"Seat {seatNumber} does not exist. "
+                + $"This screening has seats 1-{screening.NumberOfSeats}.");
+        }
+
+        var reservation = screening.ReservationFor(seatNumber);
+
+        if (reservation == null)
+        {
+            return Result<Reservation>.NotFound(
+                $"Seat {seatNumber} is not reserved.");
+        }
+
+        // Same choice as in the library task: whoever releases the booking has
+        // to be the one who made it. Without this check anyone could cancel
+        // anyone else's seat with a single request.
+        if (!Screening.IsSameCustomer(reservation.CustomerName, customerName))
+        {
+            return Result<Reservation>.Conflict(
+                $"Seat {seatNumber} is reserved by somebody else.");
+        }
+
+        screening.Release(reservation);
+
+        _screeningRepository.Save(screening);
+
+        return Result<Reservation>.Success(reservation);
     }
 }

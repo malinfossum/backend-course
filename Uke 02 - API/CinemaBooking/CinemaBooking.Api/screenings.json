@@ -3,12 +3,19 @@
     "Id": 1,
     "MovieTitle": "Interstellar",
     "NumberOfSeats": 10,
-    "ReservedSeats": [2, 5, 8]
+    "Reservations": [
+      { "SeatNumber": 2, "CustomerName": "Grace" },
+      { "SeatNumber": 5, "CustomerName": "Alan" },
+      { "SeatNumber": 8, "CustomerName": "Grace" }
+    ]
   },
   {
     "Id": 2,
     "MovieTitle": "The Matrix",
     "NumberOfSeats": 8,
-    "ReservedSeats": [1, 4]
+    "Reservations": [
+      { "SeatNumber": 1, "CustomerName": "Alan" },
+      { "SeatNumber": 4, "CustomerName": "Grace" }
+    ]
   }
 ]

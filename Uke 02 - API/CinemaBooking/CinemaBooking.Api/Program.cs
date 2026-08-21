@@ -5,8 +5,8 @@ using CinemaBooking.Api.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DI-containeren: hvem som skal leveres når noen ber om et
-// IScreeningRepository, og at ScreeningService kan opprettes automatisk.
+// The DI container: who to hand out when somebody asks for an
+// IScreeningRepository, and that ScreeningService can be built automatically.
 builder.Services.AddScoped<IScreeningRepository, FileScreeningRepository>();
 builder.Services.AddScoped<ScreeningService>();
 
@@ -19,31 +19,41 @@ app.MapGet("/screenings", (ScreeningService service) =>
 
 app.MapGet("/screenings/{id:int}", (int id, ScreeningService service) =>
 {
-    var result = service.GetById(id);
-
-    if (result.IsSuccess)
-    {
-        return Results.Ok(result.Value);
-    }
-
-    return Results.NotFound(result.ErrorMessage);
+    return ToHttp(service.GetById(id));
 });
 
 app.MapPost("/screenings/{id:int}/reservations",
     (int id, ReserveSeatDto request, ScreeningService service) =>
 {
-    // Servicen svarer med Result<T>. Endepunktet oversetter det til HTTP.
-    var result = service.ReserveSeat(
+    return ToHttp(service.ReserveSeat(
         id,
         request.CustomerName,
-        request.SeatNumber);
+        request.SeatNumber));
+});
 
+app.MapDelete("/screenings/{id:int}/reservations/{seatNumber:int}",
+    (int id, int seatNumber, string customerName, ScreeningService service) =>
+{
+    // customerName comes from the query string:
+    // DELETE /screenings/1/reservations/6?customerName=Ada
+    return ToHttp(service.CancelReservation(id, seatNumber, customerName));
+});
+
+app.Run();
+
+// The single place where the service's world meets HTTP. Everything above
+// returns Result<T>; nothing above this line mentions a status code.
+static IResult ToHttp<T>(Result<T> result)
+{
     if (result.IsSuccess)
     {
         return Results.Ok(result.Value);
     }
 
-    return Results.BadRequest(result.ErrorMessage);
-});
-
-app.Run();
+    return result.Error switch
+    {
+        ErrorKind.NotFound => Results.NotFound(result.ErrorMessage),
+        ErrorKind.Conflict => Results.Conflict(result.ErrorMessage),
+        _ => Results.BadRequest(result.ErrorMessage)
+    };
+}

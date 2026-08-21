@@ -1,15 +1,15 @@
 @baseUrl = http://localhost:5206
 
-### Hent alle kinovisninger
+### All screenings
 GET {{baseUrl}}/screenings
 
-### Hent én kinovisning
+### One screening
 GET {{baseUrl}}/screenings/1
 
-### Kinovisning som ikke finnes -> 404
+### Screening that does not exist -> 404
 GET {{baseUrl}}/screenings/999
 
-### Gyldig reservasjon -> 200 og en kvittering
+### Valid reservation -> 200 and a receipt
 POST {{baseUrl}}/screenings/1/reservations
 Content-Type: application/json
 
@@ -18,16 +18,16 @@ Content-Type: application/json
   "seatNumber": 6
 }
 
-### Samme sete en gang til -> 400
+### Same seat again -> 409 Conflict
 POST {{baseUrl}}/screenings/1/reservations
 Content-Type: application/json
 
 {
-  "customerName": "Linus",
+  "customerName": "Grace",
   "seatNumber": 6
 }
 
-### Ugyldig setenummer -> 400
+### Seat number out of range -> 400
 POST {{baseUrl}}/screenings/1/reservations
 Content-Type: application/json
 
@@ -36,7 +36,7 @@ Content-Type: application/json
   "seatNumber": 99
 }
 
-### Manglende navn -> 400
+### Missing name -> 400
 POST {{baseUrl}}/screenings/1/reservations
 Content-Type: application/json
 
@@ -45,7 +45,7 @@ Content-Type: application/json
   "seatNumber": 7
 }
 
-### Kinovisning som ikke finnes -> 400
+### Screening that does not exist -> 404 (was 400 before challenge 1)
 POST {{baseUrl}}/screenings/999/reservations
 Content-Type: application/json
 
@@ -53,3 +53,24 @@ Content-Type: application/json
   "customerName": "Ada",
   "seatNumber": 1
 }
+
+### Fifth seat for the same customer -> 409 (run the four below first)
+POST {{baseUrl}}/screenings/1/reservations
+Content-Type: application/json
+
+{
+  "customerName": "Ada",
+  "seatNumber": 7
+}
+
+### Cancel your own reservation -> 200 and the released seat
+DELETE {{baseUrl}}/screenings/1/reservations/6?customerName=Ada
+
+### Cancel a seat somebody else holds -> 409
+DELETE {{baseUrl}}/screenings/1/reservations/2?customerName=Ada
+
+### Cancel a seat that is not reserved -> 404
+DELETE {{baseUrl}}/screenings/1/reservations/7?customerName=Ada
+
+### Cancel a seat number that does not exist -> 400
+DELETE {{baseUrl}}/screenings/1/reservations/99?customerName=Ada
