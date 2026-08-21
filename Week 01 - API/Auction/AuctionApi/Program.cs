@@ -59,12 +59,12 @@ app.MapPost("/auctions", async (CreateAuctionDto dto) =>
 {
     if (string.IsNullOrWhiteSpace(dto.ItemName))
     {
-        return Results.BadRequest("Auksjonen må ha et navn.");
+        return Results.BadRequest("The auction must have a name.");
     }
 
     if (dto.StartingPrice < 0)
     {
-        return Results.BadRequest("Startpris kan ikke være negativ.");
+        return Results.BadRequest("The starting price cannot be negative.");
     }
 
     var auction = new Auction
@@ -112,12 +112,12 @@ app.MapPatch("/auctions/{id}", async (int id, UpdateAuctionDto dto) =>
 
     if (dto.IsClosed is null)
     {
-        return Results.BadRequest("Ingenting å oppdatere.");
+        return Results.BadRequest("Nothing to update.");
     }
 
     if (dto.IsClosed == false)
     {
-        return Results.BadRequest("En auksjon kan ikke gjenåpnes.");
+        return Results.BadRequest("A closed auction cannot be reopened.");
     }
 
     var wasClosedNow = auction.Close();
@@ -174,7 +174,7 @@ static async Task<List<Auction>> LoadAuctionsAsync(
             new Auction
             {
                 Id = 3,
-                ItemName = "Gammel Commodore 64",
+                ItemName = "Old Commodore 64",
                 CurrentBid = 750
             }
         };

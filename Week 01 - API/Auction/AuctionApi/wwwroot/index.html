@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nettauksjon</title>
+    <title>Online auction</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <main>
-        <h1>Nettauksjon</h1>
+        <h1>Online auction</h1>
 
         <section class="user">
-            <label for="bidderName">Ditt navn</label>
+            <label for="bidderName">Your name</label>
             <input
                 id="bidderName"
                 type="text"
-                placeholder="Skriv navnet ditt">
+                placeholder="Type your name">
         </section>
 
         <section>
-            <h2>Auksjoner</h2>
+            <h2>Auctions</h2>
 
             <div id="message"></div>
 
@@ -28,24 +28,24 @@
         </section>
 
         <section class="create-auction">
-            <h2>Opprett ny auksjon</h2>
+            <h2>Create a new auction</h2>
 
             <form id="createAuctionForm">
                 <input
                     id="itemName"
                     type="text"
-                    placeholder="Hva skal selges?"
+                    placeholder="What are you selling?"
                     required>
 
                 <input
                     id="startingPrice"
                     type="number"
                     min="0"
-                    placeholder="Startpris"
+                    placeholder="Starting price"
                     required>
 
                 <button type="submit">
-                    Opprett auksjon
+                    Create auction
                 </button>
             </form>
         </section>

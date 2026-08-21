@@ -1,15 +1,15 @@
 @host = http://localhost:5237
 
-### Alle auksjoner
+### All auctions
 GET {{host}}/auctions
 
-### Én auksjon
+### One auction
 GET {{host}}/auctions/2
 
-### Auksjon som ikke finnes -> 404
+### Auction that does not exist -> 404
 GET {{host}}/auctions/999
 
-### Opprett auksjon -> 201
+### Create an auction -> 201
 POST {{host}}/auctions
 Content-Type: application/json
 
@@ -18,7 +18,7 @@ Content-Type: application/json
   "startingPrice": 1000
 }
 
-### For lavt bud -> 400
+### Bid that is too low -> 400
 POST {{host}}/auctions/2/bids
 Content-Type: application/json
 
@@ -27,7 +27,7 @@ Content-Type: application/json
   "amount": 900
 }
 
-### Gyldig bud -> 200
+### Valid bid -> 200
 POST {{host}}/auctions/2/bids
 Content-Type: application/json
 
@@ -36,7 +36,7 @@ Content-Type: application/json
   "amount": 1200
 }
 
-### Avslutt auksjon -> 200
+### Close an auction -> 200
 PATCH {{host}}/auctions/2
 Content-Type: application/json
 
@@ -44,7 +44,7 @@ Content-Type: application/json
   "isClosed": true
 }
 
-### Bud på avsluttet auksjon -> 400
+### Bid on a closed auction -> 400
 POST {{host}}/auctions/2/bids
 Content-Type: application/json
 
@@ -53,11 +53,11 @@ Content-Type: application/json
   "amount": 5000
 }
 
-### Bare aktive auksjoner
+### Active auctions only
 GET {{host}}/auctions?active=true
 
-### Slett auksjon -> 204
+### Delete an auction -> 204
 DELETE {{host}}/auctions/5
 
-### Slett samme igjen -> 404
+### Delete the same one again -> 404
 DELETE {{host}}/auctions/5

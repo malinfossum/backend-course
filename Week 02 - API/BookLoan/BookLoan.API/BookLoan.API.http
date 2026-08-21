@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:5195
 
-### Lån bok 1 til Grace — 200 OK
+### Loan book 1 to Grace -> 200 OK
 
 POST {{baseUrl}}/loans
 Content-Type: application/json
@@ -10,7 +10,7 @@ Content-Type: application/json
   "userName": "Grace"
 }
 
-### Lån bok 1 en gang til — 400, boka er allerede utlånt
+### Loan book 1 again -> 400, the book is already on loan
 
 POST {{baseUrl}}/loans
 Content-Type: application/json
@@ -20,7 +20,7 @@ Content-Type: application/json
   "userName": "Linus"
 }
 
-### Lån en bok som ikke finnes — 400, boka finnes ikke
+### Loan a book that does not exist -> 400, the book does not exist
 
 POST {{baseUrl}}/loans
 Content-Type: application/json
@@ -30,7 +30,7 @@ Content-Type: application/json
   "userName": "Grace"
 }
 
-### Lån uten navn — 400, låntaker må ha et navn
+### Loan without a name -> 400, the borrower must have a name
 
 POST {{baseUrl}}/loans
 Content-Type: application/json
@@ -40,7 +40,7 @@ Content-Type: application/json
   "userName": ""
 }
 
-### Lever tilbake bok 1 — 200 OK
+### Return book 1 -> 200 OK
 
 POST {{baseUrl}}/returns
 Content-Type: application/json
@@ -50,7 +50,7 @@ Content-Type: application/json
   "userName": "Grace"
 }
 
-### Lever tilbake bok 1 en gang til — 400, boka er ikke utlånt
+### Return book 1 again -> 400, the book is not on loan
 
 POST {{baseUrl}}/returns
 Content-Type: application/json
@@ -60,7 +60,7 @@ Content-Type: application/json
   "userName": "Grace"
 }
 
-### Lever tilbake en bok som er lånt ut til noen andre — 400
+### Return a book that is on loan to somebody else -> 400
 
 POST {{baseUrl}}/returns
 Content-Type: application/json

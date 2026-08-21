@@ -5,9 +5,9 @@ try
     var service = new BookLoanService();
     service.BorrowBook(bookId: 1, userName: "Grace");
 
-    Console.WriteLine("Boka ble lånt ut.");
+    Console.WriteLine("The book was loaned out.");
 }
 catch (Exception exception)
 {
-    Console.WriteLine($"Utlånet feilet: {exception.Message}");
+    Console.WriteLine($"The loan failed: {exception.Message}");
 }

@@ -18,13 +18,13 @@ public class Auction
 
         if (string.IsNullOrWhiteSpace(bidderName))
         {
-            return BidResult.Fail("Budgiver må ha et navn.");
+            return BidResult.Fail("A bidder must have a name.");
         }
 
         if (amount <= CurrentBid)
         {
             return BidResult.Fail(
-                $"Budet må være høyere enn {CurrentBid} kr.");
+                $"The bid must be higher than {CurrentBid} NOK.");
         }
 
         CurrentBid = amount;

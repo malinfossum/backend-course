@@ -33,7 +33,7 @@
   },
   {
     "id": 3,
-    "itemName": "Gammel Commodore 64",
+    "itemName": "Old Commodore 64",
     "currentBid": 750,
     "highestBidder": null,
     "isClosed": false,
@@ -41,7 +41,7 @@
   },
   {
     "id": 4,
-    "itemName": "Støvsuger",
+    "itemName": "Vacuum cleaner",
     "currentBid": 500,
     "highestBidder": null,
     "isClosed": true,
@@ -49,7 +49,7 @@
   },
   {
     "id": 5,
-    "itemName": "Vaskemaskin",
+    "itemName": "Washing machine",
     "currentBid": 1500,
     "highestBidder": null,
     "isClosed": false,

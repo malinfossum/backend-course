@@ -24,11 +24,11 @@ static void TryBorrow(BookLoanService service, int bookId, string userName)
     {
         service.BorrowBook(bookId, userName);
 
-        Console.WriteLine($"{userName} lånte bok {bookId}.");
+        Console.WriteLine($"{userName} borrowed book {bookId}.");
     }
     catch (Exception exception)
     {
-        Console.WriteLine($"Utlånet feilet: {exception.Message}");
+        Console.WriteLine($"The loan failed: {exception.Message}");
     }
 }
 

@@ -1,6 +1,6 @@
-using BookLoan.API.DomainServices;
+using BookLoan.DI.DomainServices;
 
-namespace BookLoan.API;
+namespace BookLoan.DI;
 
 public class BookLoanService
 {
@@ -15,19 +15,19 @@ public class BookLoanService
     {
         if (string.IsNullOrWhiteSpace(userName))
         {
-            throw new ArgumentException("Låntaker må ha et navn.");
+            throw new ArgumentException("The borrower must have a name.");
         }
 
         var book = _bookRepository.Get(bookId);
 
         if (book == null)
         {
-            throw new InvalidOperationException("Boka finnes ikke.");
+            throw new InvalidOperationException("The book does not exist.");
         }
 
         if (book.BorrowedBy != null)
         {
-            throw new InvalidOperationException("Boka er allerede utlånt.");
+            throw new InvalidOperationException("The book is already on loan.");
         }
 
         book.BorrowedBy = userName.Trim();
@@ -39,25 +39,25 @@ public class BookLoanService
     {
         if (string.IsNullOrWhiteSpace(userName))
         {
-            throw new ArgumentException("Låntaker må ha et navn.");
+            throw new ArgumentException("The borrower must have a name.");
         }
 
         var book = _bookRepository.Get(bookId);
 
         if (book == null)
         {
-            throw new InvalidOperationException("Boka finnes ikke.");
+            throw new InvalidOperationException("The book does not exist.");
         }
 
         if (book.BorrowedBy == null)
         {
-            throw new InvalidOperationException("Boka er ikke utlånt.");
+            throw new InvalidOperationException("The book is not on loan.");
         }
 
         if (book.BorrowedBy != userName.Trim())
         {
             throw new InvalidOperationException(
-                "Boka er lånt ut til noen andre.");
+                "The book is on loan to somebody else.");
         }
 
         book.BorrowedBy = null;

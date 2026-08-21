@@ -35,35 +35,35 @@ function renderAuctions(auctions) {
             <h3>${auction.itemName}</h3>
 
             <p>
-                Høyeste bud:
+                Highest bid:
                 <strong>${auction.currentBid} kr</strong>
             </p>
 
             <p>
-                Høyeste budgiver:
+                Highest bidder:
                 <strong>
-                    ${auction.highestBidder ?? 'Ingen ennå'}
+                    ${auction.highestBidder ?? 'Nobody yet'}
                 </strong>
             </p>
 
             ${
                 auction.isClosed
-                    ? '<p><strong>Auksjonen er avsluttet</strong></p>'
+                    ? '<p><strong>This auction is closed</strong></p>'
                     : `
                         <div class="bid">
                             <input
                                 id="amount-${auction.id}"
                                 type="number"
-                                placeholder="Ditt bud">
+                                placeholder="Your bid">
 
                             <button
                                 onclick="placeBid(${auction.id})">
-                                Legg inn bud
+                                Place bid
                             </button>
 
                             <button
                                 onclick="closeAuction(${auction.id})">
-                                Avslutt
+                                Close
                             </button>
                         </div>
                     `
@@ -120,7 +120,7 @@ async function placeBid(auctionId) {
         return;
     }
 
-    showSuccess('Budet ble registrert.');
+    showSuccess('Your bid was registered.');
 
     await loadAuctions();
 }

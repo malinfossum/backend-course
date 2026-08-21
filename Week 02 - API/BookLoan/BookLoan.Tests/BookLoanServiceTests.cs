@@ -51,7 +51,7 @@ public class BookLoanServiceTests
             () => service.BorrowBook(1, "Grace"));
 
 
-        Assert.That(exception!.Message, Is.EqualTo("Boka er allerede utlånt."));
+        Assert.That(exception!.Message, Is.EqualTo("The book is already on loan."));
 
         Assert.That(book.BorrowedBy, Is.EqualTo("Ada"));
     }
@@ -68,7 +68,7 @@ public class BookLoanServiceTests
             () => service.BorrowBook(99, "Grace"));
 
 
-        Assert.That(exception!.Message, Is.EqualTo("Boka finnes ikke."));
+        Assert.That(exception!.Message, Is.EqualTo("The book does not exist."));
     }
 
     [Test]
@@ -119,7 +119,7 @@ public class BookLoanServiceTests
 
         Assert.That(
             exception!.Message,
-            Is.EqualTo("Boka er lånt ut til noen andre."));
+            Is.EqualTo("The book is on loan to somebody else."));
 
         Assert.That(book.BorrowedBy, Is.EqualTo("Ada"));
     }
@@ -138,6 +138,6 @@ public class BookLoanServiceTests
             () => service.ReturnBook(1, "Grace"));
 
 
-        Assert.That(exception!.Message, Is.EqualTo("Boka er ikke utlånt."));
+        Assert.That(exception!.Message, Is.EqualTo("The book is not on loan."));
     }
 }

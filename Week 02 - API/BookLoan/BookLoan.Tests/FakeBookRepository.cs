@@ -3,15 +3,15 @@ using BookLoan.API.DomainServices;
 
 namespace BookLoan.Tests;
 
-// Test double. Lagrer bøker i minnet, slik at BookLoanService kan testes
-// uten fil, uten JSON og uten HTTP.
+// Test double. Keeps books in memory so BookLoanService can be tested
+// without a file, without JSON and without HTTP.
 public class FakeBookRepository : IBookRepository
 {
     private readonly Dictionary<int, Book> _books = new();
 
-    // Teller hvor mange ganger Update faktisk ble kalt. Uten den kan en test
-    // bestå selv om servicen glemmer å lagre, fordi Get gir tilbake det samme
-    // objektet som ligger i dictionaryet.
+    // Counts how many times Update was actually called. Without it a test
+    // can pass even when the service forgets to save, because Get hands back
+    // the very same object that sits in the dictionary.
     public int UpdateCount { get; private set; }
 
     public FakeBookRepository(params Book[] books)

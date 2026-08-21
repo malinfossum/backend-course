@@ -19,12 +19,12 @@ public class BookLoanService
 
         if (book == null)
         {
-            throw new Exception("Boka finnes ikke.");
+            throw new Exception("The book does not exist.");
         }
 
         if (book.BorrowedBy != null)
         {
-            throw new Exception("Boka er allerede utlånt.");
+            throw new Exception("The book is already on loan.");
         }
 
         book.BorrowedBy = userName;
