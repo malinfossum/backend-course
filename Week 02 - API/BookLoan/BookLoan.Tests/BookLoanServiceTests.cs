@@ -8,9 +8,8 @@ public class BookLoanServiceTests
     [Test]
     public void BorrowBook_WhenBookIsAvailable_SetsBorrower()
     {
-        var book = new Book { Id = 1, Title = "The Hobbit" };
-
-        var repository = new FakeBookRepository(book);
+        var repository = new FakeBookRepository(
+            new Book { Id = 1, Title = "The Hobbit" });
 
         var service = new BookLoanService(repository);
 
@@ -18,15 +17,17 @@ public class BookLoanServiceTests
         service.BorrowBook(1, "Grace");
 
 
-        Assert.That(book.BorrowedBy, Is.EqualTo("Grace"));
+        // Read back through the repository, not from the local variable.
+        // The fake hands out copies, so this only passes if the service
+        // actually wrote the change back.
+        Assert.That(repository.Get(1)!.BorrowedBy, Is.EqualTo("Grace"));
     }
 
     [Test]
     public void BorrowBook_WhenBookIsAvailable_SavesThroughRepository()
     {
-        var book = new Book { Id = 1, Title = "The Hobbit" };
-
-        var repository = new FakeBookRepository(book);
+        var repository = new FakeBookRepository(
+            new Book { Id = 1, Title = "The Hobbit" });
 
         var service = new BookLoanService(repository);
 
@@ -40,9 +41,8 @@ public class BookLoanServiceTests
     [Test]
     public void BorrowBook_WhenBookIsAlreadyBorrowed_Fails()
     {
-        var book = new Book { Id = 1, Title = "The Hobbit", BorrowedBy = "Ada" };
-
-        var repository = new FakeBookRepository(book);
+        var repository = new FakeBookRepository(
+            new Book { Id = 1, Title = "The Hobbit", BorrowedBy = "Ada" });
 
         var service = new BookLoanService(repository);
 
@@ -53,7 +53,9 @@ public class BookLoanServiceTests
 
         Assert.That(exception!.Message, Is.EqualTo("The book is already on loan."));
 
-        Assert.That(book.BorrowedBy, Is.EqualTo("Ada"));
+        Assert.That(repository.Get(1)!.BorrowedBy, Is.EqualTo("Ada"));
+
+        Assert.That(repository.UpdateCount, Is.EqualTo(0));
     }
 
     [Test]
@@ -74,9 +76,8 @@ public class BookLoanServiceTests
     [Test]
     public void BorrowBook_WithoutUserName_Fails()
     {
-        var book = new Book { Id = 1, Title = "The Hobbit" };
-
-        var repository = new FakeBookRepository(book);
+        var repository = new FakeBookRepository(
+            new Book { Id = 1, Title = "The Hobbit" });
 
         var service = new BookLoanService(repository);
 
@@ -90,9 +91,8 @@ public class BookLoanServiceTests
     [Test]
     public void ReturnBook_WhenBorrowedByUser_ClearsBorrower()
     {
-        var book = new Book { Id = 1, Title = "The Hobbit", BorrowedBy = "Grace" };
-
-        var repository = new FakeBookRepository(book);
+        var repository = new FakeBookRepository(
+            new Book { Id = 1, Title = "The Hobbit", BorrowedBy = "Grace" });
 
         var service = new BookLoanService(repository);
 
@@ -100,15 +100,14 @@ public class BookLoanServiceTests
         service.ReturnBook(1, "Grace");
 
 
-        Assert.That(book.BorrowedBy, Is.Null);
+        Assert.That(repository.Get(1)!.BorrowedBy, Is.Null);
     }
 
     [Test]
     public void ReturnBook_WhenBorrowedBySomeoneElse_Fails()
     {
-        var book = new Book { Id = 1, Title = "The Hobbit", BorrowedBy = "Ada" };
-
-        var repository = new FakeBookRepository(book);
+        var repository = new FakeBookRepository(
+            new Book { Id = 1, Title = "The Hobbit", BorrowedBy = "Ada" });
 
         var service = new BookLoanService(repository);
 
@@ -121,15 +120,16 @@ public class BookLoanServiceTests
             exception!.Message,
             Is.EqualTo("The book is on loan to somebody else."));
 
-        Assert.That(book.BorrowedBy, Is.EqualTo("Ada"));
+        Assert.That(repository.Get(1)!.BorrowedBy, Is.EqualTo("Ada"));
+
+        Assert.That(repository.UpdateCount, Is.EqualTo(0));
     }
 
     [Test]
     public void ReturnBook_WhenBookIsNotBorrowed_Fails()
     {
-        var book = new Book { Id = 1, Title = "The Hobbit" };
-
-        var repository = new FakeBookRepository(book);
+        var repository = new FakeBookRepository(
+            new Book { Id = 1, Title = "The Hobbit" });
 
         var service = new BookLoanService(repository);
 
