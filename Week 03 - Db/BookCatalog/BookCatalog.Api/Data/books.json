@@ -1,0 +1,44 @@
+[
+  {
+    "Id": 1,
+    "Title": "The Hobbit",
+    "Author": "J.R.R. Tolkien",
+    "Year": 1937,
+    "IsAvailable": true
+  },
+  {
+    "Id": 2,
+    "Title": "Clean Code",
+    "Author": "Robert C. Martin",
+    "Year": 2008,
+    "IsAvailable": true
+  },
+  {
+    "Id": 3,
+    "Title": "The Pragmatic Programmer",
+    "Author": "David Thomas",
+    "Year": 1999,
+    "IsAvailable": false
+  },
+  {
+    "Id": 4,
+    "Title": "Algorithms",
+    "Author": "Ada",
+    "Year": 2024,
+    "IsAvailable": true
+  },
+  {
+    "Id": 5,
+    "Title": "Backend Fundamentals",
+    "Author": "Ada",
+    "Year": 2026,
+    "IsAvailable": true
+  },
+  {
+    "Id": 6,
+    "Title": "Domain-Driven Design",
+    "Author": "Eric Evans",
+    "Year": 2003,
+    "IsAvailable": false
+  }
+]

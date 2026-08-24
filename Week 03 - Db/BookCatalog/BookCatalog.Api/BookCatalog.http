@@ -1,0 +1,41 @@
+@baseUrl = http://localhost:5000
+
+### All books
+
+GET {{baseUrl}}/books
+
+### Book with id 1
+
+GET {{baseUrl}}/books/1
+
+### Book that does not exist
+
+GET {{baseUrl}}/books/999
+
+### Books by Ada
+
+GET {{baseUrl}}/books?author=Ada
+
+### Author that does not exist
+
+GET {{baseUrl}}/books?author=Nobody
+
+### Challenge 1 — only available books
+
+GET {{baseUrl}}/books?available=true
+
+### Challenge 1 — only unavailable books
+
+GET {{baseUrl}}/books?available=false
+
+### Challenge 2 — author and availability at the same time
+
+GET {{baseUrl}}/books?author=Ada&available=true
+
+### Challenge 3 — sorted by year
+
+GET {{baseUrl}}/books?sort=year
+
+### Challenge 2 + 3 — filtered and sorted
+
+GET {{baseUrl}}/books?available=true&sort=year
