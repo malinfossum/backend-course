@@ -1,0 +1,103 @@
+@baseUrl = http://localhost:5000
+
+### All coupons
+
+GET {{baseUrl}}/coupons
+
+### One coupon
+
+GET {{baseUrl}}/coupons/1
+
+### Coupon that does not exist - 404
+
+GET {{baseUrl}}/coupons/999
+
+### Create - the id in the answer comes from the database
+
+POST {{baseUrl}}/coupons
+Content-Type: application/json
+
+{
+  "code": "STUDENT26",
+  "description": "Studentrabatt",
+  "remainingUses": 5
+}
+
+### Duplicate code - 409, stopped by the service
+
+POST {{baseUrl}}/coupons
+Content-Type: application/json
+
+{
+  "code": "STUDENT26",
+  "description": "Studentrabatt en gang til",
+  "remainingUses": 5
+}
+
+### Empty code - 400
+
+POST {{baseUrl}}/coupons
+Content-Type: application/json
+
+{
+  "code": "",
+  "description": "Noe",
+  "remainingUses": 5
+}
+
+### Negative uses - 400
+
+POST {{baseUrl}}/coupons
+Content-Type: application/json
+
+{
+  "code": "BAD",
+  "description": "Noe",
+  "remainingUses": -5
+}
+
+### Use a coupon - RemainingUses drops by one
+
+POST {{baseUrl}}/coupons/1/use
+
+### Use it until it is empty, then once more - 409
+
+POST {{baseUrl}}/coupons/1/use
+
+### Deactivate
+
+PATCH {{baseUrl}}/coupons/2/deactivate
+
+### Deactivated coupons cannot be used - 409
+
+POST {{baseUrl}}/coupons/2/use
+
+### Challenge 2 - activate again
+
+PATCH {{baseUrl}}/coupons/2/activate
+
+### Challenge 3 - add uses
+
+PATCH {{baseUrl}}/coupons/1/add-uses
+Content-Type: application/json
+
+{
+  "amount": 10
+}
+
+### Challenge 3 - amount must be positive - 400
+
+PATCH {{baseUrl}}/coupons/1/add-uses
+Content-Type: application/json
+
+{
+  "amount": 0
+}
+
+### Delete
+
+DELETE {{baseUrl}}/coupons/3
+
+### Delete the same id again - 404, nothing was there to delete
+
+DELETE {{baseUrl}}/coupons/3
