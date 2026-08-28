@@ -84,9 +84,8 @@ public class CouponService
 
         if (existing != null)
         {
-            // This check is what gives the user a sentence instead of a crash.
-            // The UNIQUE index is what actually guarantees it, including for
-            // writes that never pass through this service at all.
+            // This check is the polite half: it answers in a sentence, and it
+            // catches the ordinary case without troubling the database.
             return Result<Coupon>.Conflict($"The code {code} is already in use.");
         }
 
@@ -98,7 +97,18 @@ public class CouponService
             IsActive = true
         };
 
-        coupon.Id = await _couponRepository.CreateAsync(coupon);
+        var newId = await _couponRepository.CreateAsync(coupon);
+
+        if (newId == null)
+        {
+            // The lookup above said the code was free, and it was - until
+            // another request took it in the moment between the two calls.
+            // Only the UNIQUE rule can catch that, and it just did. Same
+            // answer to the user either way; only the guarantee differs.
+            return Result<Coupon>.Conflict($"The code {code} is already in use.");
+        }
+
+        coupon.Id = newId.Value;
 
         return Result<Coupon>.Success(coupon);
     }

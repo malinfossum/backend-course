@@ -63,7 +63,14 @@ public class SqlCouponRepository : ICouponRepository
         return await connection.QuerySingleOrDefaultAsync<Coupon>(sql, new { Code = code });
     }
 
-    public async Task<int> CreateAsync(Coupon coupon)
+    // 2627 is a UNIQUE constraint violation, 2601 the same thing raised by a
+    // unique index. Which one you get depends on how the rule was declared, so
+    // both belong here. Matching on the message text instead would break the
+    // day the server answers in another language.
+    private const int UniqueConstraintViolation = 2627;
+    private const int UniqueIndexViolation = 2601;
+
+    public async Task<int?> CreateAsync(Coupon coupon)
     {
         // OUTPUT INSERTED.Id makes the INSERT hand back the id IDENTITY just
         // generated, in the same round trip. Reading MAX(Id) afterwards would
@@ -77,7 +84,19 @@ public class SqlCouponRepository : ICouponRepository
 
         await using var connection = new SqlConnection(_connectionString);
 
-        return await connection.QuerySingleAsync<int>(sql, coupon);
+        try
+        {
+            return await connection.QuerySingleAsync<int>(sql, coupon);
+        }
+        catch (SqlException ex)
+            when (ex.Number is UniqueConstraintViolation or UniqueIndexViolation)
+        {
+            // The service already looks for the code before it gets here, so
+            // this only fires when another request inserted the same one in
+            // between. SqlException stops at this line: everything above the
+            // repository hears "no", not "SQL Server said 2627".
+            return null;
+        }
     }
 
     public async Task<bool> TryUseAsync(int id)

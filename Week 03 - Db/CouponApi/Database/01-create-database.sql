@@ -23,10 +23,15 @@ GO
 CREATE TABLE Coupons
 (
     Id            INT           IDENTITY(1,1) PRIMARY KEY,
-    Code          NVARCHAR(50)  NOT NULL UNIQUE,
+    Code          NVARCHAR(50)  NOT NULL,
     Description   NVARCHAR(200) NOT NULL,
     RemainingUses INT           NOT NULL,
     IsActive      BIT           NOT NULL,
+
+    -- Named rather than written inline on the column: an inline UNIQUE makes
+    -- SQL Server invent a name like UQ__Coupons__A25C5AA7C414D884, and the
+    -- random tail is no help when an error has to say which rule broke.
+    CONSTRAINT UQ_Coupons_Code UNIQUE (Code),
 
     -- The one rule C# cannot be trusted with alone: "used up" must never turn
     -- into a negative balance, no matter who does the UPDATE.
