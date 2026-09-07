@@ -1,0 +1,34 @@
+@host = http://localhost:5041
+
+### All tickets (10)
+GET {{host}}/tickets
+
+### One ticket
+GET {{host}}/tickets/1
+
+### Missing ticket -> 404
+GET {{host}}/tickets/999
+
+### Open tickets, highest priority first
+GET {{host}}/tickets/open
+
+### The SQL EF generates for that query, without running it
+GET {{host}}/tickets/sql?status=Open
+
+### Status from the query string, no hardcoded "Open" in the repository
+GET {{host}}/tickets?status=Open
+
+### Two filters combined
+GET {{host}}/tickets?status=Open&minPriority=3
+
+### The SQL for two filters — note the parameters
+GET {{host}}/tickets/sql?status=Open&minPriority=3
+
+### Counted by the database, not in C#
+GET {{host}}/tickets/open/count
+
+### Priority 4 and up, newest first
+GET {{host}}/tickets/high-priority
+
+### Ticket plus customer, one round trip (Include)
+GET {{host}}/tickets/1/with-customer
