@@ -58,6 +58,18 @@ app.MapGet("/tickets/open/count", async (ITicketRepository repository) =>
 app.MapGet("/tickets/high-priority", async (ITicketRepository repository) =>
     Results.Ok(await repository.GetHighPriorityAsync()));
 
+// The same rows as /tickets/high-priority, fetched the slow way. Run both and
+// compare the logged SQL: only one of them filters in the database.
+app.MapGet("/tickets/high-priority/in-memory", async (ITicketRepository repository) =>
+    Results.Ok(await repository.GetHighPriorityInMemoryAsync()));
+
+// Database filter, then AsEnumerable, then a C# filter EF cannot translate.
+// GET /tickets/open/title?word=log
+app.MapGet("/tickets/open/title", (string? word, ITicketRepository repository) =>
+    string.IsNullOrWhiteSpace(word)
+        ? Results.BadRequest(new { error = "Query parameter 'word' is required." })
+        : Results.Ok(repository.SearchOpenByTitleWord(word)));
+
 app.MapGet("/tickets/{id:int}", async (int id, ITicketRepository repository) =>
 {
     var ticket = await repository.FindAsync(id);

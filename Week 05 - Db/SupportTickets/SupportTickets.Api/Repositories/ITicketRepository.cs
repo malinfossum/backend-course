@@ -23,4 +23,13 @@ public interface ITicketRepository
     Task<int> CountOpenAsync();
 
     Task<Ticket?> FindWithCustomerAsync(int id);
+
+    // The same result as GetHighPriorityAsync, built the slow way on purpose:
+    // every row crosses the wire and C# throws most of them away. Kept so the
+    // two SQL statements can be compared.
+    Task<List<Ticket>> GetHighPriorityInMemoryAsync();
+
+    // Open tickets whose title contains a word, compared the way C# compares
+    // strings. Not async: after AsEnumerable the rest runs on this side.
+    List<Ticket> SearchOpenByTitleWord(string word);
 }

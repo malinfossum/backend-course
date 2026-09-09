@@ -59,6 +59,35 @@ public class EfTicketRepository : ITicketRepository
             .SingleOrDefaultAsync(ticket => ticket.Id == id);
     }
 
+    // Variant B from the exercise. ToListAsync runs first, so the SQL has no
+    // WHERE and no ORDER BY — the database sends all ten rows and the filtering
+    // and sorting happen in memory. With two million rows this is the wrong
+    // shape, and the SQL log is where that shows.
+    public async Task<List<Ticket>> GetHighPriorityInMemoryAsync()
+    {
+        var tickets = await _context.Tickets.ToListAsync();
+
+        return tickets
+            .Where(ticket => ticket.Priority >= 4)
+            .OrderByDescending(ticket => ticket.CreatedUtc)
+            .ToList();
+    }
+
+    // Status is filtered by the database. AsEnumerable draws the line: the title
+    // check uses StringComparison, which has no SQL translation, so it has to
+    // run in C#. Narrow the database side first — everything past the line is
+    // paid for in rows transferred.
+    public List<Ticket> SearchOpenByTitleWord(string word)
+    {
+        var openTickets = _context.Tickets
+            .Where(ticket => ticket.Status == "Open")
+            .AsEnumerable();
+
+        return openTickets
+            .Where(ticket => ticket.Title.Contains(word, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
     // Built but not executed. Each Where adds to the SQL; nothing is sent until
     // the caller asks for a result with ToListAsync or ToQueryString.
     private IQueryable<Ticket> BuildSearch(string? status, int? minPriority)

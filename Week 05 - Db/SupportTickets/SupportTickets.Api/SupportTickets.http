@@ -32,3 +32,12 @@ GET {{host}}/tickets/high-priority
 
 ### Ticket plus customer, one round trip (Include)
 GET {{host}}/tickets/1/with-customer
+
+### Variant B: same rows, fetched the slow way — no WHERE in the SQL log
+GET {{host}}/tickets/high-priority/in-memory
+
+### Database filter, then AsEnumerable, then a C# filter EF cannot translate
+GET {{host}}/tickets/open/title?word=log
+
+### Missing word -> 400
+GET {{host}}/tickets/open/title
