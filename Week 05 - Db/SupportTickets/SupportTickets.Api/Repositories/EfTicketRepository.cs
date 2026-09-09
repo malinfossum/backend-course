@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SupportTickets.Api.Data;
+using SupportTickets.Api.Dtos;
 using SupportTickets.Api.Models;
 
 namespace SupportTickets.Api.Repositories;
@@ -86,6 +87,138 @@ public class EfTicketRepository : ITicketRepository
         return openTickets
             .Where(ticket => ticket.Title.Contains(word, StringComparison.OrdinalIgnoreCase))
             .ToList();
+    }
+
+    public List<Ticket> SearchOpenWithLongTitle()
+    {
+        var openTickets = _context.Tickets
+            .Where(ticket => ticket.Status == "Open")
+            .AsEnumerable();
+
+        return openTickets
+            .Where(HasLongTitle)
+            .ToList();
+    }
+
+    public async Task<List<Ticket>> GetAllWithCustomerAsync()
+    {
+        return await _context.Tickets
+            .Include(ticket => ticket.Customer)
+            .OrderBy(ticket => ticket.Id)
+            .ToListAsync();
+    }
+
+    // No Include: naming Customer.Name inside the projection is enough for EF to
+    // add the join, and it fetches only the columns the DTO asks for.
+    public async Task<List<TicketSummaryDto>> GetSummaryAsync(string? status, int? minPriority)
+    {
+        return await BuildSummary(status, minPriority).ToListAsync();
+    }
+
+    public string GetSummarySql(string? status, int? minPriority)
+    {
+        return BuildSummary(status, minPriority).ToQueryString();
+    }
+
+    // The other half of the comparison: whole entities across the wire, mapped
+    // afterwards. Same output as GetSummaryAsync, wider SELECT.
+    public async Task<List<TicketSummaryDto>> GetSummaryViaIncludeAsync()
+    {
+        var tickets = await _context.Tickets
+            .Include(ticket => ticket.Customer)
+            .OrderByDescending(ticket => ticket.Priority)
+            .ThenByDescending(ticket => ticket.CreatedUtc)
+            .ToListAsync();
+
+        return tickets
+            .Select(ticket => new TicketSummaryDto(
+                ticket.Id,
+                ticket.Title,
+                ticket.Status,
+                ticket.Priority,
+                ticket.Customer.Name))
+            .ToList();
+    }
+
+    public async Task<List<TicketSummaryDto>> GetOpenSummaryAsync()
+    {
+        return await _context.Tickets
+            .Where(ticket => ticket.Status == "Open")
+            .OrderByDescending(ticket => ticket.Priority)
+            .ThenBy(ticket => ticket.CreatedUtc)
+            .Select(ticket => new TicketSummaryDto(
+                ticket.Id,
+                ticket.Title,
+                ticket.Status,
+                ticket.Priority,
+                ticket.Customer.Name))
+            .ToListAsync();
+    }
+
+    public async Task<List<ImportantTicketDto>> GetImportantAsync()
+    {
+        return await _context.Tickets
+            .Where(ticket => ticket.Status == "Open" && ticket.Priority >= 4)
+            .OrderBy(ticket => ticket.CreatedUtc)
+            .Select(ticket => new ImportantTicketDto(
+                ticket.Title,
+                ticket.Priority,
+                ticket.Customer.Name,
+                ticket.CreatedUtc))
+            .ToListAsync();
+    }
+
+    // Take becomes TOP in SQL Server, so the database returns count rows — not a
+    // full table for C# to trim.
+    public async Task<List<Ticket>> GetTopOpenAsync(int count)
+    {
+        return await _context.Tickets
+            .Where(ticket => ticket.Status == "Open")
+            .OrderByDescending(ticket => ticket.Priority)
+            .Take(count)
+            .ToListAsync();
+    }
+
+    // Nothing here is going to be changed and saved, so EF has no reason to keep
+    // a before-and-after copy of every row.
+    public async Task<List<Ticket>> GetOpenNoTrackingAsync()
+    {
+        return await _context.Tickets
+            .AsNoTracking()
+            .Where(ticket => ticket.Status == "Open")
+            .ToListAsync();
+    }
+
+    private static bool HasLongTitle(Ticket ticket)
+    {
+        return ticket.Title.Length > 15;
+    }
+
+    // Same stepwise shape as BuildSearch, but it ends in a projection: sorting
+    // happens on the entity, then only the DTO columns are selected.
+    private IQueryable<TicketSummaryDto> BuildSummary(string? status, int? minPriority)
+    {
+        var query = _context.Tickets.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            query = query.Where(ticket => ticket.Status == status);
+        }
+
+        if (minPriority.HasValue)
+        {
+            query = query.Where(ticket => ticket.Priority >= minPriority.Value);
+        }
+
+        return query
+            .OrderByDescending(ticket => ticket.Priority)
+            .ThenByDescending(ticket => ticket.CreatedUtc)
+            .Select(ticket => new TicketSummaryDto(
+                ticket.Id,
+                ticket.Title,
+                ticket.Status,
+                ticket.Priority,
+                ticket.Customer.Name));
     }
 
     // Built but not executed. Each Where adds to the SQL; nothing is sent until

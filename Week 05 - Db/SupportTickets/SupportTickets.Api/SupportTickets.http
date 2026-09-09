@@ -41,3 +41,63 @@ GET {{host}}/tickets/open/title?word=log
 
 ### Missing word -> 400
 GET {{host}}/tickets/open/title
+
+### Del 7: open tickets with a title longer than 15 chars (C#-side filter)
+GET {{host}}/tickets/open/long-title
+
+### Oppgave 5: every ticket with its customer (Include)
+GET {{host}}/tickets/with-customer
+
+### Oppgave 6: projection straight to a DTO - five columns, no Include
+GET {{host}}/tickets/summary
+
+### Oppgave 7: the same data via Include - ten columns
+GET {{host}}/tickets/summary/via-include
+
+### Del 15: open only, priority down then oldest first
+GET {{host}}/tickets/summary/open
+
+### Del 16-17: filters applied only when sent
+GET {{host}}/tickets/summary?status=Open&minPriority=3
+
+### Del 18: the SQL for each filter combination
+GET {{host}}/tickets/summary/sql
+
+###
+GET {{host}}/tickets/summary/sql?status=Open
+
+###
+GET {{host}}/tickets/summary/sql?minPriority=3
+
+###
+GET {{host}}/tickets/summary/sql?status=Open&minPriority=3
+
+### Oppgave 13: WHERE, ORDER BY and TOP done by the database
+GET {{host}}/tickets/top-open?count=5
+
+### Oppgave 10: one query, every customer, zero included
+GET {{host}}/customers/ticket-counts
+
+### Del 19-21: the same answer as N+1 - count the SELECTs in the log
+GET {{host}}/customers/ticket-counts/n-plus-one
+
+### Oppgave 11: Any becomes EXISTS
+GET {{host}}/customers/with-open-tickets
+
+### Del 26: HasOpenTickets computed by the database
+GET {{host}}/customers/statuses
+
+### Del 28: a customer and their tickets, one query
+GET {{host}}/customers/1/tickets
+
+### Missing customer -> 404
+GET {{host}}/customers/999/tickets
+
+### Utfordring 1: customers with at least 2 tickets, busiest first
+GET {{host}}/customers/busy?minTickets=2
+
+### Utfordring 2: open tickets at priority 4+, oldest first
+GET {{host}}/tickets/important
+
+### Bonus: a read-only query with change tracking off
+GET {{host}}/tickets/open/no-tracking

@@ -1,3 +1,4 @@
+using SupportTickets.Api.Dtos;
 using SupportTickets.Api.Models;
 
 namespace SupportTickets.Api.Repositories;
@@ -32,4 +33,34 @@ public interface ITicketRepository
     // Open tickets whose title contains a word, compared the way C# compares
     // strings. Not async: after AsEnumerable the rest runs on this side.
     List<Ticket> SearchOpenByTitleWord(string word);
+
+    // Open tickets with a title longer than fifteen characters. The length test is
+    // a plain C# method, so it runs after AsEnumerable.
+    List<Ticket> SearchOpenWithLongTitle();
+
+    // Every ticket with its customer loaded in the same round trip.
+    Task<List<Ticket>> GetAllWithCustomerAsync();
+
+    // Filters applied only when given, then sorted and projected — all before
+    // the query is sent.
+    Task<List<TicketSummaryDto>> GetSummaryAsync(string? status, int? minPriority);
+
+    // The SQL the same call would send. Useful for comparing filter combinations.
+    string GetSummarySql(string? status, int? minPriority);
+
+    // The same summaries built the other way: Include the entities, then map in
+    // C#. Kept for the SQL comparison in the exercise.
+    Task<List<TicketSummaryDto>> GetSummaryViaIncludeAsync();
+
+    // Open tickets only: highest priority first, oldest first within a priority.
+    Task<List<TicketSummaryDto>> GetOpenSummaryAsync();
+
+    // Open tickets at priority 4 and up, oldest first.
+    Task<List<ImportantTicketDto>> GetImportantAsync();
+
+    // The highest-priority open tickets, limited by the database with TOP.
+    Task<List<Ticket>> GetTopOpenAsync(int count);
+
+    // A read-only query that opts out of change tracking.
+    Task<List<Ticket>> GetOpenNoTrackingAsync();
 }

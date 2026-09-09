@@ -20,6 +20,7 @@ builder.Services.AddDbContext<SupportTicketDbContext>(options =>
 
 // The only line that knows Entity Framework is behind the interface.
 builder.Services.AddScoped<ITicketRepository, EfTicketRepository>();
+builder.Services.AddScoped<ICustomerRepository, EfCustomerRepository>();
 
 var app = builder.Build();
 
@@ -101,5 +102,95 @@ app.MapGet("/tickets/{id:int}/with-customer", async (int id, ITicketRepository r
         CustomerEmail = ticket.Customer.Email
     });
 });
+
+// Open tickets whose title is longer than fifteen characters. The length test is
+// an ordinary C# method, so it cannot be part of the SQL.
+app.MapGet("/tickets/open/long-title", (ITicketRepository repository) =>
+    Results.Ok(repository.SearchOpenWithLongTitle()));
+
+// Every ticket with its customer, one round trip. Projected on the way out, since
+// the entities point at each other.
+app.MapGet("/tickets/with-customer", async (ITicketRepository repository) =>
+{
+    var tickets = await repository.GetAllWithCustomerAsync();
+
+    return Results.Ok(tickets.Select(ticket => new
+    {
+        ticket.Id,
+        ticket.Title,
+        ticket.Status,
+        ticket.Priority,
+        CustomerName = ticket.Customer.Name
+    }));
+});
+
+// GET /tickets/summary
+// GET /tickets/summary?status=Open
+// GET /tickets/summary?status=Open&minPriority=3
+app.MapGet("/tickets/summary", async (
+    string? status,
+    int? minPriority,
+    ITicketRepository repository) =>
+    Results.Ok(await repository.GetSummaryAsync(status, minPriority)));
+
+// The SQL behind the line above. Change the filters and watch it change.
+app.MapGet("/tickets/summary/sql", (
+    string? status,
+    int? minPriority,
+    ITicketRepository repository) =>
+    Results.Text(repository.GetSummarySql(status, minPriority)));
+
+// Same summaries, built with Include and mapped in C#. Compare the two SQL
+// statements: this one selects every column of both tables.
+app.MapGet("/tickets/summary/via-include", async (ITicketRepository repository) =>
+    Results.Ok(await repository.GetSummaryViaIncludeAsync()));
+
+// Open tickets only: priority down, then oldest first.
+app.MapGet("/tickets/summary/open", async (ITicketRepository repository) =>
+    Results.Ok(await repository.GetOpenSummaryAsync()));
+
+// Open and priority 4 or higher, oldest first.
+app.MapGet("/tickets/important", async (ITicketRepository repository) =>
+    Results.Ok(await repository.GetImportantAsync()));
+
+// The n highest-priority open tickets, cut down by the database with TOP.
+app.MapGet("/tickets/top-open", async (int? count, ITicketRepository repository) =>
+    Results.Ok(await repository.GetTopOpenAsync(count ?? 5)));
+
+// A read-only read with change tracking switched off.
+app.MapGet("/tickets/open/no-tracking", async (ITicketRepository repository) =>
+    Results.Ok(await repository.GetOpenNoTrackingAsync()));
+
+// One query: every customer and their ticket count, zero included.
+app.MapGet("/customers/ticket-counts", async (ICustomerRepository repository) =>
+    Results.Ok(await repository.GetTicketCountsAsync()));
+
+// The same answer as N+1 queries. Count the SELECT statements in the log.
+app.MapGet("/customers/ticket-counts/n-plus-one", async (ICustomerRepository repository) =>
+    Results.Ok(await repository.GetTicketCountsNPlusOneAsync()));
+
+// Customers with at least one open ticket — Any, which EF writes as EXISTS.
+app.MapGet("/customers/with-open-tickets", async (ICustomerRepository repository) =>
+{
+    var customers = await repository.GetWithOpenTicketsAsync();
+
+    return Results.Ok(customers.Select(customer => new { customer.Id, customer.Name }));
+});
+
+// Every customer, with the open-ticket question answered by the database.
+app.MapGet("/customers/statuses", async (ICustomerRepository repository) =>
+    Results.Ok(await repository.GetStatusesAsync()));
+
+// A customer and their tickets, projected in one query.
+app.MapGet("/customers/{id:int}/tickets", async (int id, ICustomerRepository repository) =>
+{
+    var customer = await repository.FindWithTicketsAsync(id);
+
+    return customer == null ? Results.NotFound() : Results.Ok(customer);
+});
+
+// GET /customers/busy?minTickets=2 — busiest customers first.
+app.MapGet("/customers/busy", async (int? minTickets, ICustomerRepository repository) =>
+    Results.Ok(await repository.GetBusyAsync(minTickets ?? 2)));
 
 app.Run();
