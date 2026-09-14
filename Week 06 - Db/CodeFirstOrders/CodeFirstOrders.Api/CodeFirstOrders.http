@@ -1,0 +1,22 @@
+@host = http://localhost:5253
+
+### All customers
+GET {{host}}/customers
+
+### Create a customer
+POST {{host}}/customers
+Content-Type: application/json
+
+{
+  "name": "Linus Torvalds",
+  "email": "linus@example.com"
+}
+
+### Same email again — 2601 from the unique index, surfaced as 500 (no error handling on purpose)
+POST {{host}}/customers
+Content-Type: application/json
+
+{
+  "name": "Linus Again",
+  "email": "linus@example.com"
+}
