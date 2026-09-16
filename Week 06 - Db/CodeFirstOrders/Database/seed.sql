@@ -17,6 +17,10 @@ IF NOT EXISTS (SELECT 1 FROM Orders)
         (SELECT TOP 1 Id FROM Customers WHERE EmailAddress = 'ada@example.com'),
         SYSUTCDATETIME(), 1299, 'Created', 'Customer called support');
 
+IF NOT EXISTS (SELECT 1 FROM Products WHERE Name = 'Keyboard')
+    INSERT INTO Products (Name, StockCount) VALUES ('Keyboard', 10);
+
 SELECT * FROM Customers;
+SELECT * FROM Products;
 SELECT Id, CustomerId, TotalAmount, Status, Note FROM Orders;
 SELECT MigrationId FROM __EFMigrationsHistory;

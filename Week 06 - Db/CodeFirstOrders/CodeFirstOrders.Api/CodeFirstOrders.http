@@ -20,3 +20,49 @@ Content-Type: application/json
   "name": "Linus Again",
   "email": "linus@example.com"
 }
+
+### ---- Week 6 Wednesday: transactions ----
+### 0. Reset: StockCount = 10, no shipments
+POST {{host}}/shipments/reset
+
+### 1. Naive, happy path: two SaveChanges, works (StockCount 8, one shipment)
+POST {{host}}/shipments?version=naive
+Content-Type: application/json
+
+{ "productId": 1, "quantity": 2 }
+
+### 2. Naive + crash: StockCount 8 but NO shipment — 2 keyboards gone (run 0 first)
+POST {{host}}/shipments?version=naive&crash=true
+Content-Type: application/json
+
+{ "productId": 1, "quantity": 2 }
+
+### 3. Transaction + crash: rollback, StockCount back at 10 (run 0 first)
+POST {{host}}/shipments?version=transaction&crash=true
+Content-Type: application/json
+
+{ "productId": 1, "quantity": 2 }
+
+### 4. Final: one SaveChanges, validation first → 201
+POST {{host}}/shipments
+Content-Type: application/json
+
+{ "productId": 1, "quantity": 2 }
+
+### 5. Final: too many → 409 before any transaction is opened
+POST {{host}}/shipments
+Content-Type: application/json
+
+{ "productId": 1, "quantity": 20 }
+
+### 6. Final: unknown product → 404
+POST {{host}}/shipments
+Content-Type: application/json
+
+{ "productId": 999, "quantity": 1 }
+
+### Look at the state
+GET {{host}}/products
+
+###
+GET {{host}}/shipments
