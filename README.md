@@ -3,7 +3,7 @@
 My own solutions to the tasks from the backend course in GET Prepared. One folder per week, mirroring
 the structure of the course material.
 
-Everything here is written from scratch against the task descriptions — the reference solutions handed
+Everything here is written from scratch against the task descriptions. The reference solutions handed
 out by the school are deliberately not in this repository.
 
 ## Contents
@@ -32,7 +32,7 @@ The most complete of the three, and the one worth reading first.
   the two styles can be compared.
 - The fake hands out and stores copies, the way the file repository does. While it returned the same
   instance it stored, a test could assert on state and stay green even when the service forgot to
-  save — the service and the test were mutating the same object.
+  save. The service and the test were mutating the same object.
 
 ### BookCatalog
 
@@ -40,7 +40,7 @@ The same API served two ways. `IBookRepository` never changes; only the class re
 `Program.cs` does.
 
 - `FileBookRepository` reads the whole JSON file and filters in C#. `SqlBookRepository` sends a
-  `WHERE` clause and lets SQL Server return only the matching rows — the difference that matters
+  `WHERE` clause and lets SQL Server return only the matching rows. That is the difference that matters
   once the table is large.
 - Values always travel as parameters, separate from the SQL text. `ORDER BY` cannot be a parameter,
   so the two possible endings are compile time constants instead.
@@ -59,7 +59,7 @@ it. One table, eight endpoints.
   clients cannot both spend the last use. Four concurrent requests against a coupon with one use
   left give one 200 and three 409s.
 - `rows affected` is honest but silent. Zero can mean the coupon does not exist, is deactivated or
-  is used up, and the repository cannot tell which — so the service asks afterwards and turns the
+  is used up, and the repository cannot tell which. So the service asks afterwards and turns the
   number into a sentence.
 - Every rule is stated twice on purpose. The service explains it to the caller; `UNIQUE` and
   `CHECK (RemainingUses >= 0)` enforce it against writes that never pass through the service at all.
@@ -68,12 +68,12 @@ it. One table, eight endpoints.
 
 ### CourseDb
 
-No application this week — a course administration database, and five SQL scripts that build it and
+No application this week. It is a course administration database and five SQL scripts that build it and
 then ask it questions. Students and courses are many-to-many, so the relationship gets a table:
 `Enrollments`.
 
 - `Enrollments` is not just two foreign keys. `EnrolledUtc` and `Status` describe *this student on
-  this course* — neither value has anywhere else to live, which is what makes the join table a real
+  this course*. Neither value has anywhere else to live, which is what makes the join table a real
   table rather than plumbing.
 - `INNER JOIN` drops the student who is enrolled in nothing; `LEFT JOIN` keeps him with `NULL` on the
   other side. Adding `Courses` has to be a `LEFT JOIN` too, or he is thrown out again on the second
@@ -81,7 +81,7 @@ then ask it questions. Students and courses are many-to-many, so the relationshi
 - Counting students per course needs `COUNT(e.Id)`, not `COUNT(*)`. The left join hands `COUNT(*)` one
   row of `NULL`s for the empty course, so it reports 1 where the answer is 0.
 - Duplicate enrollments are stopped by `UNIQUE (StudentId, CourseId)`. Neither column is unique alone
-  — both are supposed to repeat — it is the pair that may occur only once.
+  (both are supposed to repeat). It is the pair that may occur only once.
 - `547` is not one error. Foreign key on insert, foreign key on delete and `CHECK` all report it;
   only `UNIQUE` gets its own number, `2627`. The constraint name in the message is what tells them
   apart, which is the argument for naming them.
@@ -96,7 +96,7 @@ answers a user asks for.
 - The report per screening needs both kinds of join at once. `Movies` is an `INNER JOIN`, because the
   foreign key already guarantees a screening has a film. `Reservations` has to be a `LEFT JOIN`,
   because the screening nobody booked is the row the report exists to show.
-- `COUNT(r.Id)`, not `COUNT(*)` — the same trap as `CourseDb`, met again in a different domain.
+- `COUNT(r.Id)`, not `COUNT(*)`. It is the same trap as `CourseDb`, met again in a different domain.
 - `100.0 * COUNT(r.Id) / s.NumberOfSeats`, not `100 *`. Two ints divide as ints, so every occupancy
   would come back zero.
 - "Customers who never booked" is written twice, with `NOT EXISTS` and with `LEFT JOIN ... IS NULL`.
@@ -108,13 +108,13 @@ answers a user asks for.
   20 000 rows: a sixth of the table matches, so seeking and then fetching each row costs more than
   reading the table. The same filter under `COUNT(*)` seeks, because the index answers that question
   by itself. An index is used when it is cheaper than the alternative, and that depends on how much is
-  asked for — not only on what is filtered.
+  asked for, not only on what is filtered.
 
 ### SupportTickets
 
 The same job as `BookCatalog`, one abstraction higher: the database is written first, and Entity
 Framework generates the entity classes and the `DbContext` from the schema. The repository interface
-is unchanged from the Dapper weeks, which is the point — nothing above it knows what is underneath.
+is unchanged from the Dapper weeks, which is the point: nothing above it knows what is underneath.
 
 - The scaffolding needs `Microsoft.EntityFrameworkCore.Design`, not `.Tools`. `.Tools` is the package
   for Visual Studio's Package Manager Console; from the CLI it is a replacement, not an addition.
@@ -127,7 +127,7 @@ is unchanged from the Dapper weeks, which is the point — nothing above it know
   list moves the whole result across the wire to learn something the database already knew.
 - `Include` cannot be returned as it stands. `Ticket` points at `Customer`, which points back at its
   `Tickets`, so serialising the entity runs in a circle. The endpoint projects the fields it needs
-  instead — the generated classes are regenerated by the next scaffold, so an attribute on them
+  instead. The generated classes are regenerated by the next scaffold, so an attribute on them
   would not survive.
 
 ### CodeFirstOrders
@@ -139,7 +139,7 @@ Wednesday half adds `ShippingService`, one business operation that is two writes
 - EF Core 10 recognises a rename. `Name` → `FullName` came out as `RenameColumn`, not the
   `DropColumn` + `AddColumn` the trap is usually described as. But it is matching old and new columns
   by type, name and position, and that is a guess: two same-typed renames with no name overlap came
-  out crossed — `FullName` → `Beta`, `Country` → `Alpha` — with no warning at all. Reading `Up()` is
+  out crossed (`FullName` → `Beta`, `Country` → `Alpha`) with no warning at all. Reading `Up()` is
   not about catching data loss; it is about catching a wrong guess.
 - The data-loss warning is only raised for `DropColumn`. A crossed rename is silent.
 - `= "Created"` on the property is not a database default. EF put `DEFAULT N''` on `Status` and
@@ -167,10 +167,10 @@ Wednesday, transactions (`Services/ShippingService.cs`, three versions side by s
   explicit transaction each `SaveChanges` creates a *savepoint* first.
 - `CHECK (StockCount >= 0)` on the final one-`SaveChanges` version, with the stock validation
   bypassed: error 547, and the shipment `INSERT` in the same batch was rolled back with the failed
-  `UPDATE`. Same number as an FK violation — 547 is "a constraint said no", not "which one".
+  `UPDATE`. Same number as an FK violation: 547 is "a constraint said no", not "which one".
 - Reading a row another connection has updated but not committed: on `EfOrdersDb` (created by a
   script) the reader blocks and times out (1222) until the writer commits or rolls back. On this
-  database it reads the last committed value at once — because EF Core turned on
+  database it reads the last committed value at once. That is because EF Core turned on
   `READ_COMMITTED_SNAPSHOT` when it *created* the database, and none of the script-created ones have
   it. `WITH (NOLOCK)` shows the uncommitted value on both. Friday's topic, seen a day early.
 - A failed statement does not end the transaction: after the 547 the transaction was still open and
