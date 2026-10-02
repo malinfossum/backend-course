@@ -19,6 +19,7 @@ out by the school are deliberately not in this repository.
 | Week 04 – Db | `CinemaReports` | Reporting: `GROUP BY`, aggregates, `EXISTS`, `CASE`, indexes and execution plans |
 | Week 05 – Db | `SupportTickets` | Entity Framework Database First: scaffolding, `DbContext`, LINQ translated to SQL, `Include` |
 | Week 06 – Db | `CodeFirstOrders` | Entity Framework Code First: Fluent API, migrations, schema changes on a database that already has data; transactions and ACID |
+| Week 07–08 – DevOps | [`devops-course`](https://github.com/malinfossum/devops-course) | Containers, Compose, CI with GitHub Actions, images in GHCR, deploy and rollback. Its own repository, taught as a separate mini course |
 
 ### CinemaBooking
 
