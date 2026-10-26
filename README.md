@@ -1,253 +1,39 @@
-# Backend-course
+# Backend Course
 
-My own solutions to the tasks from the backend course in GET Prepared. One folder per week, mirroring
-the structure of the course material.
+My own solutions to the tasks in Backend Light, the ten-week backend course in GET Prepared (August to October 2026).
 
-Everything here is written from scratch against the task descriptions. The reference solutions handed
-out by the school are deliberately not in this repository.
+Everything here is written from scratch against the task descriptions. The reference solutions handed out by the school are deliberately not in this repository.
+
+## Stack
+
+.NET 10, ASP.NET Core Minimal API, NUnit, Moq, Dapper, Entity Framework Core, SQL Server.
 
 ## Contents
 
+One folder per week, mirroring the course material. Each project has its own README with what I found and how to run it.
+
 | Week | Project | Topic |
 |------|---------|-------|
-| Week 01 – API | `Auction` | Minimal API, DTOs, `.http` files, JSON file persistence, async |
-| Week 02 – API | `BookLoan` | Service classes, dependency injection, lifetimes |
-| Week 02 – API | `CinemaBooking` | Unit testing with NUnit, fakes and mocks, `Result<T>` |
-| Week 03 – Db | `BookCatalog` | SQL Server, raw SQL, Dapper, swapping file persistence for a database |
-| Week 03 – Db | `CouponApi` | Writing to the database: `IDENTITY`, constraints, rows affected, `Result<T>` |
-| Week 04 – Db | `CourseDb` | Relations: primary and foreign keys, many-to-many, `INNER JOIN`, `LEFT JOIN` |
-| Week 04 – Db | `CinemaReports` | Reporting: `GROUP BY`, aggregates, `EXISTS`, `CASE`, indexes and execution plans |
-| Week 05 – Db | `SupportTickets` | Entity Framework Database First: scaffolding, `DbContext`, LINQ translated to SQL, `Include` |
-| Week 06 – Db | `CodeFirstOrders` | Entity Framework Code First: Fluent API, migrations, schema changes on a database that already has data; transactions and ACID |
-| Week 07–08 – DevOps | [`devops-course`](https://github.com/malinfossum/devops-course) | Containers, Compose, CI with GitHub Actions, images in GHCR, deploy and rollback. Its own repository, taught as a separate mini course |
-
-### CinemaBooking
-
-The most complete of the three, and the one worth reading first.
-
-- `Result<T>` carries an `ErrorKind`, so the service can say *what kind* of failure it was without
-  knowing anything about HTTP. The endpoint is the only place that turns that into 404, 409 or 400.
-- A screening tracks reservations with an owner, which is what both cancellation and the
-  "at most four seats per customer" rule need.
-- The service is covered twice: once with a hand written fake, once with Moq, kept side by side so
-  the two styles can be compared.
-- The fake hands out and stores copies, the way the file repository does. While it returned the same
-  instance it stored, a test could assert on state and stay green even when the service forgot to
-  save. The service and the test were mutating the same object.
-
-### BookCatalog
-
-The same API served two ways. `IBookRepository` never changes; only the class registered in
-`Program.cs` does.
-
-- `FileBookRepository` reads the whole JSON file and filters in C#. `SqlBookRepository` sends a
-  `WHERE` clause and lets SQL Server return only the matching rows. That is the difference that matters
-  once the table is large.
-- Values always travel as parameters, separate from the SQL text. `ORDER BY` cannot be a parameter,
-  so the two possible endings are compile time constants instead.
-- One `SearchAsync` covers `?author=`, `?available=` and `?sort=year`, because "all books" is just a
-  search with nothing filtered out.
-- A new `SqlConnection` per call. The pool keeps the underlying connections open, so this returns one
-  to the pool rather than holding it for the lifetime of the app.
-
-### CouponApi
-
-Discount codes, and the week where the application starts changing the database rather than reading
-it. One table, eight endpoints.
-
-- The rule for using a coupon lives in the `WHERE` clause: `SET RemainingUses = RemainingUses - 1
-  WHERE Id = @Id AND IsActive = 1 AND RemainingUses > 0`. Read and write are one statement, so two
-  clients cannot both spend the last use. Four concurrent requests against a coupon with one use
-  left give one 200 and three 409s.
-- `rows affected` is honest but silent. Zero can mean the coupon does not exist, is deactivated or
-  is used up, and the repository cannot tell which. So the service asks afterwards and turns the
-  number into a sentence.
-- Every rule is stated twice on purpose. The service explains it to the caller; `UNIQUE` and
-  `CHECK (RemainingUses >= 0)` enforce it against writes that never pass through the service at all.
-- `IsActive` and `RemainingUses` are separate rules: a reactivated coupon that is used up is active
-  and still unusable.
-
-### CourseDb
-
-No application this week. It is a course administration database and five SQL scripts that build it and
-then ask it questions. Students and courses are many-to-many, so the relationship gets a table:
-`Enrollments`.
-
-- `Enrollments` is not just two foreign keys. `EnrolledUtc` and `Status` describe *this student on
-  this course*. Neither value has anywhere else to live, which is what makes the join table a real
-  table rather than plumbing.
-- `INNER JOIN` drops the student who is enrolled in nothing; `LEFT JOIN` keeps him with `NULL` on the
-  other side. Adding `Courses` has to be a `LEFT JOIN` too, or he is thrown out again on the second
-  join.
-- Counting students per course needs `COUNT(e.Id)`, not `COUNT(*)`. The left join hands `COUNT(*)` one
-  row of `NULL`s for the empty course, so it reports 1 where the answer is 0.
-- Duplicate enrollments are stopped by `UNIQUE (StudentId, CourseId)`. Neither column is unique alone
-  (both are supposed to repeat). It is the pair that may occur only once.
-- `547` is not one error. Foreign key on insert, foreign key on delete and `CHECK` all report it;
-  only `UNIQUE` gets its own number, `2627`. The constraint name in the message is what tells them
-  apart, which is the argument for naming them.
-
-### CinemaReports
-
-SQL only again, and no application on purpose. The task asks for three endpoints, but two of them are
-the third with a simpler query, and the session that follows walks one of them from request to JSON in
-class. What is left is the part that is actually about SQL: turning four related tables into the
-answers a user asks for.
-
-- The report per screening needs both kinds of join at once. `Movies` is an `INNER JOIN`, because the
-  foreign key already guarantees a screening has a film. `Reservations` has to be a `LEFT JOIN`,
-  because the screening nobody booked is the row the report exists to show.
-- `COUNT(r.Id)`, not `COUNT(*)`. It is the same trap as `CourseDb`, met again in a different domain.
-- `100.0 * COUNT(r.Id) / s.NumberOfSeats`, not `100 *`. Two ints divide as ints, so every occupancy
-  would come back zero.
-- "Customers who never booked" is written twice, with `NOT EXISTS` and with `LEFT JOIN ... IS NULL`.
-  Same answer. `NOT EXISTS` says what is meant; the left join shows why it works.
-- The seed writes its ids by hand. `DBCC CHECKIDENT(..., RESEED, 0)` on a table that has never held a
-  row makes the *next* id `0` rather than `1`, which shifts every foreign key down one and fails with
-  a `547`. `SET IDENTITY_INSERT` says exactly which id each row gets.
-- The index is the interesting one. `SELECT *` filtered on the foreign key keeps scanning even at
-  20 000 rows: a sixth of the table matches, so seeking and then fetching each row costs more than
-  reading the table. The same filter under `COUNT(*)` seeks, because the index answers that question
-  by itself. An index is used when it is cheaper than the alternative, and that depends on how much is
-  asked for, not only on what is filtered.
-
-### SupportTickets
-
-The same job as `BookCatalog`, one abstraction higher: the database is written first, and Entity
-Framework generates the entity classes and the `DbContext` from the schema. The repository interface
-is unchanged from the Dapper weeks, which is the point: nothing above it knows what is underneath.
-
-- The scaffolding needs `Microsoft.EntityFrameworkCore.Design`, not `.Tools`. `.Tools` is the package
-  for Visual Studio's Package Manager Console; from the CLI it is a replacement, not an addition.
-- EF parameterises without being asked, and it types the parameter from the column:
-  `DECLARE @status nvarchar(30)` comes straight from `Status NVARCHAR(30)`.
-- The query is built in one place and executed somewhere else. `BuildSearch` adds `Where` and
-  `OrderBy` and returns an `IQueryable`; nothing reaches the database until a caller asks for a
-  result. `/tickets/sql` returns the generated SQL for a query that is never run.
-- `CountAsync` sends `SELECT COUNT(*)` and gets one number back. Loading the rows and counting the
-  list moves the whole result across the wire to learn something the database already knew.
-- `Include` cannot be returned as it stands. `Ticket` points at `Customer`, which points back at its
-  `Tickets`, so serialising the entity runs in a circle. The endpoint projects the fields it needs
-  instead. The generated classes are regenerated by the next scaffold, so an attribute on them
-  would not survive.
-
-### CodeFirstOrders
-
-The direction reversed: the classes come first and the migrations build the database. The project is
-the nine migrations under `Infrastructure/Migrations`, and what each one was before it was run; the
-Wednesday half adds `ShippingService`, one business operation that is two writes.
-
-- EF Core 10 recognises a rename. `Name` → `FullName` came out as `RenameColumn`, not the
-  `DropColumn` + `AddColumn` the trap is usually described as. But it is matching old and new columns
-  by type, name and position, and that is a guess: two same-typed renames with no name overlap came
-  out crossed (`FullName` → `Beta`, `Country` → `Alpha`) with no warning at all. Reading `Up()` is
-  not about catching data loss; it is about catching a wrong guess.
-- The data-loss warning is only raised for `DropColumn`. A crossed rename is silent.
-- `= "Created"` on the property is not a database default. EF put `DEFAULT N''` on `Status` and
-  `DEFAULT 0` on `IsActive`, so a schema change would have deactivated every existing customer. The
-  migration was edited to `defaultValue: true`.
-- A required column on rows that already exist is three steps, not one: add it nullable, `UPDATE` the
-  rows, then `AlterColumn` to `NOT NULL`. EF's one-liner leaves an empty-string default that lets
-  future inserts skip the column too.
-- `dotnet ef migrations script <from> <to>` prints the SQL a migration will run. That is the
-  `ToQueryString()` of migrations, and it is more honest than the `migrationBuilder` calls.
-- `1505`, a new number: `CREATE UNIQUE INDEX` over existing duplicates. `2627`/`2601` are an insert
-  breaking a constraint; `1505` is creating the constraint when the data already breaks it.
-- Conventions decide things that were never asked for: `Email` became `nvarchar(450)` because a unique
-  index key is capped at 900 bytes, and the foreign key got `ON DELETE CASCADE`.
-
-Wednesday, transactions (`Services/ShippingService.cs`, three versions side by side, `?version=` and
-`&crash=true` on `POST /shipments` replace pasting a `throw` between runs):
-
-- Two `SaveChanges` and a crash between them: stock 8, no shipment, two keyboards gone. The same two
-  inside `BeginTransactionAsync` with the crash: stock back at 10. The first `UPDATE` was sent but
-  never committed.
-- EF's log shows what "one `SaveChanges` is already a transaction" actually means: a `SaveChanges`
-  with one statement gets no transaction at all (a single statement is atomic on its own); one with
-  two statements gets `Began transaction` … `Committed transaction` around both. And inside an
-  explicit transaction each `SaveChanges` creates a *savepoint* first.
-- `CHECK (StockCount >= 0)` on the final one-`SaveChanges` version, with the stock validation
-  bypassed: error 547, and the shipment `INSERT` in the same batch was rolled back with the failed
-  `UPDATE`. Same number as an FK violation: 547 is "a constraint said no", not "which one".
-- Reading a row another connection has updated but not committed: on `EfOrdersDb` (created by a
-  script) the reader blocks and times out (1222) until the writer commits or rolls back. On this
-  database it reads the last committed value at once. That is because EF Core turned on
-  `READ_COMMITTED_SNAPSHOT` when it *created* the database, and none of the script-created ones have
-  it. `WITH (NOLOCK)` shows the uncommitted value on both. Friday's topic, seen a day early.
-- A failed statement does not end the transaction: after the 547 the transaction was still open and
-  still holding the row lock. That is what the `catch → RollbackAsync` is for.
-- EF picked `Cascade` for the new FK too; `Shipment` is history, so it was set to `Restrict` in the
-  model and the migration regenerated rather than hand-edited (the snapshot has to agree).
+| 1 | [Auction](Week%2001%20-%20API/Auction/) | Minimal API, DTOs, `.http` files, JSON file persistence, async |
+| 2 | [BookLoan](Week%2002%20-%20API/BookLoan/) | Service classes, dependency injection, lifetimes |
+| 2 | [CinemaBooking](Week%2002%20-%20API/CinemaBooking/) | Unit testing with NUnit, fakes and mocks, `Result<T>` |
+| 3 | [BookCatalog](Week%2003%20-%20Db/BookCatalog/) | SQL Server, raw SQL, Dapper, swapping file persistence for a database |
+| 3 | [CouponApi](Week%2003%20-%20Db/CouponApi/) | Writing to the database: `IDENTITY`, constraints, rows affected |
+| 4 | [CourseDb](Week%2004%20-%20Db/CourseDb/) | Relations: keys, many-to-many, `INNER JOIN`, `LEFT JOIN` (SQL only) |
+| 4 | [CinemaReports](Week%2004%20-%20Db/CinemaReports/) | Reporting: `GROUP BY`, aggregates, `EXISTS`, `CASE`, indexes (SQL only) |
+| 5 | [SupportTickets](Week%2005%20-%20Db/SupportTickets/) | Entity Framework Database First, LINQ translated to SQL, `Include` |
+| 6 | [CodeFirstOrders](Week%2006%20-%20Db/CodeFirstOrders/) | Entity Framework Code First, migrations on live data, transactions and ACID |
+| 7 and 8 | [devops-course](https://github.com/malinfossum/devops-course) | Containers, Compose, CI with GitHub Actions, GHCR, deploy and rollback. Taught as a separate mini course, so it has its own repository |
+| 9 | [Hugin #61](https://github.com/malinfossum/hugin/pull/61) | Architecture: Rich Domain Model, Value Objects, Domain Events. No task to hand in, so I applied it to my own project |
+| 10 | None | Functional Core / Imperative Shell, pure functions, `Result` composition. No task code in this repository |
 
 ## Running it
 
+Every C# project has a `.slnx` and builds with `dotnet build`. The two test suites:
+
 ```bash
-dotnet run --project "Week 01 - API/Auction/AuctionApi"
 dotnet test "Week 02 - API/BookLoan/BookLoan.slnx"
 dotnet test "Week 02 - API/CinemaBooking/CinemaBooking.slnx"
-dotnet run --project "Week 03 - Db/BookCatalog/BookCatalog.Api"
-dotnet run --project "Week 03 - Db/CouponApi/CouponApi.Api"
-dotnet run --project "Week 05 - Db/SupportTickets/SupportTickets.Api"
-dotnet run --project "Week 06 - Db/CodeFirstOrders/CodeFirstOrders.Api"
 ```
 
-`BookCatalog` and `CouponApi` need a local SQL Server. Create the databases first:
-
-```bash
-sqlcmd -S localhost -E -C -b -i "Week 03 - Db/BookCatalog/Database/01-create-database.sql"
-sqlcmd -S localhost -E -C -b -i "Week 03 - Db/CouponApi/Database/01-create-database.sql"
-```
-
-`CouponApi`'s script drops and reseeds its table, so the `.http` file always starts from the same
-three coupons.
-
-Week 4 is SQL only. The scripts run in order, and `01` drops and reseeds, so `04` and `05` have to be
-run again after it:
-
-```bash
-sqlcmd -S localhost -E -C -b -i "Week 04 - Db/CourseDb/Database/01-create-database.sql"
-sqlcmd -S localhost -E -C -b -W -s"|" -i "Week 04 - Db/CourseDb/Database/02-joins.sql"
-sqlcmd -S localhost -E -C -b -W -s"|" -i "Week 04 - Db/CourseDb/Database/03-constraints.sql"
-sqlcmd -S localhost -E -C -b -W -s"|" -i "Week 04 - Db/CourseDb/Database/04-status.sql"
-sqlcmd -S localhost -E -C -b -W -s"|" -i "Week 04 - Db/CourseDb/Database/05-challenges.sql"
-```
-
-`03` is meant to fail: three statements the foreign keys refuse, caught and printed so the whole
-script still runs.
-
-`CinemaReports` runs the same way, and `02` can be run on its own to put the test data back:
-
-```bash
-sqlcmd -S localhost -E -C -b -i "Week 04 - Db/CinemaReports/Database/01-create-database.sql"
-sqlcmd -S localhost -E -C -b -W -s"|" -i "Week 04 - Db/CinemaReports/Database/02-seed.sql"
-sqlcmd -S localhost -E -C -b -W -s"|" -i "Week 04 - Db/CinemaReports/Database/03-reports.sql"
-sqlcmd -S localhost -E -C -b -i "Week 04 - Db/CinemaReports/Database/04-index.sql"
-```
-
-To see an execution plan without SSMS, ask `sqlcmd` for one. `SET SHOWPLAN_TEXT ON` returns the plan
-instead of running the query, and has to sit in a batch of its own:
-
-```sql
-SET SHOWPLAN_TEXT ON;
-GO
-SELECT COUNT(*) FROM Reservations WHERE ScreeningId = 1;
-GO
-```
-
-`SupportTickets` needs its database before the API will start, and the script drops and reseeds, so
-the `.http` file always sees the same ten tickets:
-
-```bash
-sqlcmd -S localhost -E -C -b -i "Week 05 - Db/SupportTickets/Database/01-create-database.sql"
-```
-
-`CodeFirstOrders` builds its own database from the migrations; the script only adds test data:
-
-```bash
-dotnet ef database update --project "Week 06 - Db/CodeFirstOrders/CodeFirstOrders.Api"
-sqlcmd -S localhost -E -C -b -i "Week 06 - Db/CodeFirstOrders/Database/seed.sql"
-```
-
-The auction project also serves a small web front end on the same address.
-
-Stack: .NET 10, ASP.NET Core Minimal API, NUnit, Moq, Dapper, Entity Framework Core, SQL Server.
+Weeks 3 to 6 need a local SQL Server. Each project README has the script that creates its database.
