@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/Week 01 - API/">
+    <Project Path="Week 01 - API/Auction/AuctionApi/AuctionApi.csproj" />
+  </Folder>
+  <Folder Name="/Week 02 - API/">
+    <Project Path="Week 02 - API/BookLoan/BookLoan.API/BookLoan.API.csproj" />
+    <Project Path="Week 02 - API/BookLoan/BookLoan.Basic.Console/BookLoan.Basic.Console.csproj" />
+    <Project Path="Week 02 - API/BookLoan/BookLoan.DI.Console/BookLoan.DI.Console.csproj" />
+    <Project Path="Week 02 - API/BookLoan/BookLoan.Tests/BookLoan.Tests.csproj" />
+    <Project Path="Week 02 - API/CinemaBooking/CinemaBooking.Api/CinemaBooking.Api.csproj" />
+    <Project Path="Week 02 - API/CinemaBooking/CinemaBooking.Tests/CinemaBooking.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Week 03 - Db/">
+    <Project Path="Week 03 - Db/BookCatalog/BookCatalog.Api/BookCatalog.Api.csproj" />
+    <Project Path="Week 03 - Db/CouponApi/CouponApi.Api/CouponApi.Api.csproj" />
+  </Folder>
+  <Folder Name="/Week 05 - Db/">
+    <Project Path="Week 05 - Db/SupportTickets/SupportTickets.Api/SupportTickets.Api.csproj" />
+  </Folder>
+  <Folder Name="/Week 06 - Db/">
+    <Project Path="Week 06 - Db/CodeFirstOrders/CodeFirstOrders.Api/CodeFirstOrders.Api.csproj" />
+  </Folder>
+</Solution>

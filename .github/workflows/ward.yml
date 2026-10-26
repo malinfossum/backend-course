@@ -20,9 +20,9 @@ jobs:
     with:
       node: ""                 # npm project directory, e.g. "." or "web"
       a11y: "off"              # off | warn | strict
-      dotnet: ""               # solution directory or file, e.g. "." or "App.slnx"
+      dotnet: "backend-course.slnx" # solution directory or file, e.g. "." or "App.slnx"
       dotnet-os: ubuntu-latest # windows-latest for WPF
-      dotnet-ef-project: ""    # EF Core project path, e.g. "src/App.Data"
+      dotnet-ef-project: "Week 06 - Db/CodeFirstOrders/CodeFirstOrders.Api" # EF Core project path, e.g. "src/App.Data"
 
   # CodeQL on every pull request, forks included; the main ruleset waits for its results.
   codeql:

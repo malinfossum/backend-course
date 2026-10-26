@@ -15,3 +15,26 @@ updates:
           - "github/*"
           - "dependabot/*"
         update-types: [minor, patch]
+
+  - package-ecosystem: nuget # *.csproj
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dotnet-runtime:
+        patterns:
+          - "Microsoft.AspNetCore.*"
+          - "Microsoft.EntityFrameworkCore*"
+          - "Microsoft.Extensions.*"
+          - "Microsoft.NET.*"
+          - "System.*"
+        update-types: [minor, patch]
+      nuget-minor-patch:
+        patterns: ["*"]
+        exclude-patterns:
+          - "Microsoft.AspNetCore.*"
+          - "Microsoft.EntityFrameworkCore*"
+          - "Microsoft.Extensions.*"
+          - "Microsoft.NET.*"
+          - "System.*"
+        update-types: [minor, patch]
